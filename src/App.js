@@ -1,6 +1,12 @@
 import React, { useReducer } from 'react';
-import { List, Button } from 'antd';
-import { BookOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { 
+  List, Button, 
+  Input, Space 
+} from 'antd';
+import { 
+  BookOutlined, EditOutlined, 
+  DeleteOutlined,
+} from '@ant-design/icons';
 import { v4 as uuid } from 'uuid';
 import './App.css';
 
@@ -77,6 +83,28 @@ function App() {
     dispatch({ type: 'EDIT_MODE', id: item.id });
   }
 
+  function renderEditForm(item) {
+    return(
+      <div>
+        <Space direction="vertical">
+          <Input value={item.title} />
+          <Input value={item.text} />
+        </Space>
+      </div>
+    )
+  }
+
+  function renderItemContent(item) {
+    return [
+      <List.Item.Meta 
+        avatar={<BookOutlined/>}
+        title={item.title}
+        key={uuid()}
+      />,
+      item.text
+    ]
+  }
+
   function renderItem(item) {
     return(
       <List.Item
@@ -96,11 +124,7 @@ function App() {
           />,
         ]}
       >
-        <List.Item.Meta 
-          avatar={<BookOutlined/>}
-          title={item.editMode ? `${item.title}[EDIT MODE]`: item.title}
-        />
-        {item.text}
+        {item.editMode ? renderEditForm(item) : renderItemContent(item)}
       </List.Item>
     )
   }
