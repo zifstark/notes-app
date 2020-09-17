@@ -31,6 +31,17 @@ const initialState = {
 
 function reducer(state, action) {
   switch(action.type) {
+    case 'DELETE_NOTE': {
+      const notes = [...state.notes]
+      const noteIndex = state.notes.findIndex(n => n.id === action.id);
+      return {
+        ...state,
+        notes: [
+          ...notes.slice(0, noteIndex),
+          ...notes.slice(noteIndex + 1)
+        ]
+      }
+    }
     default:
       return state;
   }
@@ -39,13 +50,22 @@ function reducer(state, action) {
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  function deleteNote(item) {
+    dispatch({type: 'DELETE_NOTE', id: item.id});
+  }
+
   function renderItem(item) {
     return(
       <List.Item
         key={item.id}
         actions={[
           <Button type="dashed" shape="circle" icon={<EditOutlined />} />,
-          <Button type="danger" shape="circle" icon={<DeleteOutlined />} />,
+          <Button 
+            onClick={() => deleteNote(item)}
+            type="danger" 
+            shape="circle" 
+            icon={<DeleteOutlined />} 
+          />,
         ]}
       >
         <List.Item.Meta 
