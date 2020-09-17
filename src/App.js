@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import { 
   BookOutlined, EditOutlined, 
-  DeleteOutlined,
+  DeleteOutlined, CloseOutlined,
 } from '@ant-design/icons';
 import { v4 as uuid } from 'uuid';
 import './App.css';
@@ -41,7 +41,7 @@ const initialState = {
 
 function reducer(state, action) {
   switch(action.type) {
-    case 'EDIT_MODE': {
+    case 'ON_EDIT': {
       const { notes } = state;
       let noteIndex = notes.findIndex(n => n.id === action.id);
       return {
@@ -50,7 +50,22 @@ function reducer(state, action) {
           ...notes.slice(0, noteIndex),
           {
             ...notes[noteIndex],
-            editMode: true,
+            ...action.data,
+          },
+          ...notes.slice(noteIndex + 1)
+        ],
+      }
+    }
+    case 'TOGGLE_EDIT_MODE': {
+      const { notes } = state;
+      let noteIndex = notes.findIndex(n => n.id === action.id);
+      return {
+        ...state,
+        notes: [
+          ...notes.slice(0, noteIndex),
+          {
+            ...notes[noteIndex],
+            editMode: !notes[noteIndex].editMode,
           },
           ...notes.slice(noteIndex + 1)
         ],
@@ -80,15 +95,23 @@ function App() {
   }
 
   function toggleEditMode(item) {
-    dispatch({ type: 'EDIT_MODE', id: item.id });
+    dispatch({ type: 'TOGGLE_EDIT_MODE', id: item.id });
+  }
+
+  function onEdit(item, e) {
+    dispatch({ 
+      type: 'ON_EDIT', 
+      id: item.id, 
+      data: { [e.target.name]: e.target.value }
+    });
   }
 
   function renderEditForm(item) {
     return(
       <div>
         <Space direction="vertical">
-          <Input value={item.title} />
-          <Input value={item.text} />
+          <Input name="title" onChange={e => onEdit(item, e)} value={item.title} />
+          <Input name="text" onChange={e => onEdit(item, e)} value={item.text} />
         </Space>
       </div>
     )
@@ -112,9 +135,9 @@ function App() {
         actions={[
           <Button
             onClick={() => toggleEditMode(item)}
-            type="dashed" 
+            type={item.editMode ? "ghost" : "dashed"} 
             shape="circle" 
-            icon={<EditOutlined />} 
+            icon={item.editMode ? <CloseOutlined /> : <EditOutlined />} 
           />,
           <Button 
             onClick={() => deleteNote(item)}
