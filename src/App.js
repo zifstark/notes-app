@@ -6,6 +6,7 @@ import {
 import { 
   BookOutlined, EditOutlined, 
   DeleteOutlined, CloseOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 import { v4 as uuid } from 'uuid';
 import './App.css';
@@ -30,17 +31,36 @@ const initialState = {
       text: 'text of the note c',
       editMode: false,
     },
-    {
-      id: uuid(),
-      title: 'note d',
-      text: 'text of the note d',
-      editMode: false,
-    },
-  ]
+  ],
+  newNote: {
+    tile: '',
+    text: '',
+  }
 }
 
 function reducer(state, action) {
   switch(action.type) {
+    case 'CLEAR_FORM':
+      return {
+        ...state,
+        newNote: {
+          title: '',
+          text: '',
+        }
+      }
+    case 'INPUT_CHANGE':
+      return {
+        ...state,
+        newNote: {
+          ...state.newNote,
+          [action.name]: action.value,
+        }
+      }
+    case 'ADD_NOTE':
+      return {
+        ...state,
+        notes: [...state.notes, { id: uuid(), ...state.newNote}]
+      }
     case 'ON_EDIT': {
       const { notes } = state;
       let noteIndex = notes.findIndex(n => n.id === action.id);
@@ -89,6 +109,7 @@ function reducer(state, action) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { title, text } = state.newNote;
 
   function deleteNote(item) {
     dispatch({type: 'DELETE_NOTE', id: item.id});
@@ -104,6 +125,19 @@ function App() {
       id: item.id, 
       data: { [e.target.name]: e.target.value }
     });
+  }
+
+  function onFormInputChange(e) {
+    dispatch({ 
+      type: 'INPUT_CHANGE', 
+      name: e.target.name, 
+      value: e.target.value 
+    });
+  }
+
+  function addNote() {
+    dispatch({ type: 'ADD_NOTE' });
+    dispatch({ type: 'CLEAR_FORM' });
   }
 
   function renderEditForm(item) {
@@ -154,6 +188,29 @@ function App() {
 
   return (
     <div className="App">
+      <form className="CreationForm">
+        <Space>
+          <Input 
+            onChange={onFormInputChange} 
+            name="title" 
+            placeholder="Title"
+            value={state.newNote.title}
+          />
+          <Input 
+            onChange={onFormInputChange} 
+            name="text" 
+            placeholder="Text"
+            value={state.newNote.text} 
+          />
+          <Button 
+            onClick={addNote} 
+            type="primary" 
+            shape="circle" 
+            icon={<PlusOutlined/>}
+            disabled={!(title && text)}
+          />
+        </Space>
+      </form>
       <List
         itemLayout='horizontal'
         dataSource={state.notes}
