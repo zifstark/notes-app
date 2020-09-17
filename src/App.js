@@ -9,30 +9,49 @@ const initialState = {
     {
       id: uuid(),
       title: 'note a',
-      text: 'text of the note a'
+      text: 'text of the note a',
+      editMode: false,
     },
     {
       id: uuid(),
       title: 'note b',
-      text: 'text of the note b'
+      text: 'text of the note b',
+      editMode: false,
     },
     {
       id: uuid(),
       title: 'note c',
-      text: 'text of the note c'
+      text: 'text of the note c',
+      editMode: false,
     },
     {
       id: uuid(),
       title: 'note d',
-      text: 'text of the note d'
+      text: 'text of the note d',
+      editMode: false,
     },
   ]
 }
 
 function reducer(state, action) {
   switch(action.type) {
+    case 'EDIT_MODE': {
+      const { notes } = state;
+      let noteIndex = notes.findIndex(n => n.id === action.id);
+      return {
+        ...state,
+        notes: [
+          ...notes.slice(0, noteIndex),
+          {
+            ...notes[noteIndex],
+            editMode: true,
+          },
+          ...notes.slice(noteIndex + 1)
+        ],
+      }
+    }
     case 'DELETE_NOTE': {
-      const notes = [...state.notes]
+      const notes = [...state.notes];
       const noteIndex = state.notes.findIndex(n => n.id === action.id);
       return {
         ...state,
@@ -54,12 +73,21 @@ function App() {
     dispatch({type: 'DELETE_NOTE', id: item.id});
   }
 
+  function toggleEditMode(item) {
+    dispatch({ type: 'EDIT_MODE', id: item.id });
+  }
+
   function renderItem(item) {
     return(
       <List.Item
         key={item.id}
         actions={[
-          <Button type="dashed" shape="circle" icon={<EditOutlined />} />,
+          <Button
+            onClick={() => toggleEditMode(item)}
+            type="dashed" 
+            shape="circle" 
+            icon={<EditOutlined />} 
+          />,
           <Button 
             onClick={() => deleteNote(item)}
             type="danger" 
@@ -70,7 +98,7 @@ function App() {
       >
         <List.Item.Meta 
           avatar={<BookOutlined/>}
-          title={item.title}
+          title={item.editMode ? `${item.title}[EDIT MODE]`: item.title}
         />
         {item.text}
       </List.Item>
