@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import { 
   List, Button, 
   Input, Space 
@@ -12,26 +12,7 @@ import { v4 as uuid } from 'uuid';
 import './App.css';
 
 const initialState = {
-  notes: [
-    {
-      id: uuid(),
-      title: 'note a',
-      text: 'text of the note a',
-      editMode: false,
-    },
-    {
-      id: uuid(),
-      title: 'note b',
-      text: 'text of the note b',
-      editMode: false,
-    },
-    {
-      id: uuid(),
-      title: 'note c',
-      text: 'text of the note c',
-      editMode: false,
-    },
-  ],
+  notes: [],
   newNote: {
     tile: '',
     text: '',
@@ -40,6 +21,11 @@ const initialState = {
 
 function reducer(state, action) {
   switch(action.type) {
+    case 'SET_NOTES':
+      return {
+        ...state,
+        notes: action.notes
+      }
     case 'CLEAR_FORM':
       return {
         ...state,
@@ -110,6 +96,15 @@ function reducer(state, action) {
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { title, text } = state.newNote;
+
+  useEffect(() => {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    dispatch({ type: 'SET_NOTES', notes });
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(state.notes));
+  }, [state.notes])
 
   function deleteNote(item) {
     dispatch({type: 'DELETE_NOTE', id: item.id});
